@@ -33,7 +33,7 @@ fun handleFetchWeather(cityName: String, onWeatherFetched: (Respondata?) -> Unit
 // Функция для выполнения GET-запроса
 
 suspend fun getWeather(city: String): Respondata {
-    val url = "https://api.openweathermap.org/data/2.5/weather?q=$city&appid=b60a2f76c2ada4f0ea798662ba686e3d"
+    val url = "https://api.openweathermap.org/data/2.5/weather?q=$city&appid=Well Well Well Бесплатный сыр, только в мышеловке "
 
     // Выполнение GET-запроса
     val response: HttpResponse = client.get(url)
