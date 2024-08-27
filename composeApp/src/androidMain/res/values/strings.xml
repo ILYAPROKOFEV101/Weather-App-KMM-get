@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Weather</string>
-    <string name="cityname">Название  вашего города </string>
+    <string name="app_name" translatable="false">Weather</string>
+    <string name="cityname" translatable="false">Название  вашего города </string>
 
 </resources>

@@ -55,10 +55,12 @@ kotlin {
         }
 
         nativeMain.dependencies {
+            implementation(libs.kotlinx.datetime)
             implementation(libs.ktor.client.darwin)
         }
 
         commonMain.dependencies {
+            implementation(libs.kotlinx.datetime)
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material)

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -45,14 +46,29 @@ import androidx.compose.ui.unit.sp
 import com.ilya.composeweatheapp.DatacllaRespond.Respondata
 import getWeather
 import handleFetchWeather
+import io.ktor.http.HttpHeaders.Date
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import weather.composeapp.generated.resources.Res
 import weather.composeapp.generated.resources.baseline_search_24
 import weather.composeapp.generated.resources.compose_multiplatform
+import weather.composeapp.generated.resources.feelslike
+import weather.composeapp.generated.resources.humidity
+import weather.composeapp.generated.resources.temp
+import weather.composeapp.generated.resources.weather
+import weather.composeapp.generated.resources.pressure
+import weather.composeapp.generated.resources.sunrise
+import weather.composeapp.generated.resources.sunset
+import weather.composeapp.generated.resources.visibility
+import weather.composeapp.generated.resources.weather_description
+import weather.composeapp.generated.resources.windspeed
 
 @Composable
 @Preview
@@ -64,7 +80,7 @@ fun App() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(10.dp),
             contentAlignment = Alignment.TopCenter
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -83,30 +99,62 @@ fun App() {
     }
 }
 
+
+
 @Composable
 fun WeatherInfoDisplay(weatherInfo: Respondata?) {
     weatherInfo?.let {
+        // парс дданных
         var temp = it.main.temp - 273.15
+
+        val pressure = it.main.pressure * 0.75006375541921f
+        val pressureStatus = when {
+            pressure.toInt() < 1000 -> "Низкое"
+            pressure.toInt() in 1000..1020 -> "Нормальное"
+            else -> "Высокое"
+        }
 
     Spacer(modifier = Modifier.height(20.dp))
     Card(modifier = Modifier
         .fillMaxWidth()
         .wrapContentHeight()
         .clip(RoundedCornerShape(30.dp))
-        .padding(start = 10.dp , end = 10.dp)
-        .background(Color.White)
+        .padding(start = 5.dp , end = 5.dp)
+        .background(Color(0xFF87CEEB))
     ) {
         Column(modifier = Modifier
             .fillMaxSize()
-            .padding(5.dp)
+            )
+        {
+            Spacer(modifier = Modifier.height(20.dp))
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp)
+                .clip(RoundedCornerShape(30.dp))
+                .background(Color(0xFF87CEEB))
+                .height(70.dp)
             ) {
-            Box(modifier = Modifier.fillMaxWidth().background(Color.Blue)){
-                Text(text = "Weather in ${weatherInfo?.name}", modifier = Modifier.align(Alignment.Center))
+                Text(text = "Weather in ${weatherInfo?.name}", modifier = Modifier.align(Alignment.Center), fontSize = 24.sp, color = Color.White)
             }
             Spacer(modifier = Modifier.height(20.dp))
-            Row(modifier = Modifier.fillMaxWidth()){
-                Text(text = "Temperature: ${temp}°C")
-                Text(text = "Humidity: ${it.weather}%")
+
+            Row(modifier = Modifier.fillMaxWidth().height(50.dp)){
+                Text(text = "${stringResource(Res.string.temp)}: ${temp.toInt()}°C", fontSize = 24.sp)
+                Spacer(modifier = Modifier.width(20.dp))
+                Text(text = "${stringResource(Res.string.weather)}: ${weatherInfo?.weather?.get(0)?.description}", fontSize = 24.sp)
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Box(modifier = Modifier.fillMaxWidth().height(40.dp)) {
+                Text(
+                    text = "${stringResource(Res.string.pressure)} $pressure гПа ($pressureStatus)",
+                    textAlign = TextAlign.Start,
+                    fontSize = 24.sp
+                )
+            }
+            Spacer(modifier = Modifier.height(20.dp))
+            Box(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+                WeatherDisplay(weatherInfo)
             }
 
 
@@ -116,6 +164,59 @@ fun WeatherInfoDisplay(weatherInfo: Respondata?) {
 
     }
 }
+
+// Функция для форматирования времени
+fun formatTime(unixTime: Long): String {
+    val dateTime = Instant.fromEpochSeconds(unixTime).toLocalDateTime(TimeZone.currentSystemDefault())
+    val hour = dateTime.hour.toString().padStart(2, '0')
+    val minute = dateTime.minute.toString().padStart(2, '0')
+    return "$hour:$minute"
+}
+
+
+@Composable
+fun WeatherDisplay(weather: Respondata) {
+
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        Text(
+            text = "${stringResource(Res.string.temp)} ${weather.main.temp}°C",
+            fontSize = 24.sp
+        )
+        Text(
+            text = "${stringResource(Res.string.feelslike)} ${weather.main.feelsLike}°C",
+            fontSize = 20.sp
+        )
+        Text(
+            text = "${stringResource(Res.string.weather_description)} ${weather.weather[0].description}",
+            fontSize = 20.sp
+        )
+        Text(
+            text = "${stringResource(Res.string.humidity)} ${weather.main.humidity}%",
+            fontSize = 20.sp
+        )
+        Text(
+            text = "${stringResource(Res.string.windspeed)} ${weather.wind.speed} m/s",
+            fontSize = 20.sp
+        )
+        Text(
+            text = "${stringResource(Res.string.visibility)} ${weather.visibility / 1000} km",
+            fontSize = 20.sp
+        )
+        // Пример использования в вашем коде
+        Text(
+            text = "${stringResource(Res.string.sunrise)} ${formatTime(weather.sys.sunrise.toLong())}",
+            fontSize = 20.sp
+        )
+        Text(
+            text = "${stringResource(Res.string.sunset)} ${formatTime(weather.sys.sunset.toLong())}",
+            fontSize = 20.sp
+        )
+    }
+}
+
+
+
 
 @Composable
 fun getCityName(onCityNameEntered: (String) -> Unit) {

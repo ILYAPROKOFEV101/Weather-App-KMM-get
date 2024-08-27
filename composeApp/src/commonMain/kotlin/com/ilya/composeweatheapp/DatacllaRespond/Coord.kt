@@ -9,5 +9,5 @@ class Coord(
     @SerialName("lat")
     val lat: Double,
     @SerialName("lon")
-    val lon: Int
+    val lon: Double
 )
